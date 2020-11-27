@@ -16,6 +16,15 @@ module Discordrb
     alias_method :user, :author
     alias_method :writer, :author
 
+    # @return [integer] used to identify message type.
+    attr_reader :type
+
+    # @return [Hash, nil] message reference data.
+    attr_reader :message_reference
+
+    # @return [Message, nil] reference data sent with crossposted messages and replies.
+    attr_reader :referenced_message
+
     # @return [Channel] the channel in which this message was sent.
     attr_reader :channel
 
@@ -78,6 +87,7 @@ module Discordrb
       @pinned = data['pinned']
       @tts = data['tts']
       @nonce = data['nonce']
+      @type = data['type']
       @mention_everyone = data['mention_everyone']
 
       @server = bot.server(data['guild_id'].to_i) if data['guild_id']
@@ -139,6 +149,8 @@ module Discordrb
 
       @embeds = []
       @embeds = data['embeds'].map { |e| Embed.new(e, self) } if data['embeds']
+
+      @referenced_message = data.dig('referenced_message').nil? ? nil : Message.new(data['referenced_message'], @bot)
     end
 
     # Replies to this message with the specified content.
